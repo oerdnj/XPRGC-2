@@ -23,35 +23,36 @@
  * The state must be seeded so that it is not everywhere zero.
  */
 
-#include <inttypes.h>
 #include <assert.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #ifdef __linux__
 #include <sys/random.h>
 #endif
 
-static _Thread_local uint32_t seed[4] = { 0 };
+static _Thread_local uint32_t seed[4] = {0};
 
-__attribute__((__constructor__)) void seed_init(void) {
-  while (seed[0] == 0 && seed[1] == 0 && seed[2] == 0 && seed[3] == 0) {
-    #if __linux__
-    ssize_t r = getrandom(seed, sizeof(seed), 0);
-    assert(r == sizeof(seed));
-    #elif __APPLE__
-    arc4random_buf(seed, sizeof(seed));
-    #else
-    #error No random source available
-    #endif
-  }
+__attribute__((__constructor__)) void seed_init(void)
+{
+	while (seed[0] == 0 && seed[1] == 0 && seed[2] == 0 && seed[3] == 0) {
+#if __linux__
+		ssize_t r = getrandom(seed, sizeof(seed), 0);
+		assert(r == sizeof(seed));
+#elif __APPLE__
+		arc4random_buf(seed, sizeof(seed));
+#else
+#error No random source available
+#endif
+	}
 }
 
-static uint32_t
-rotl(const uint32_t x, int k) {
+static uint32_t rotl(const uint32_t x, int k)
+{
 	return ((x << k) | (x >> (32 - k)));
 }
 
-static uint32_t
-next(void) {
+static uint32_t next(void)
+{
 	uint32_t result_starstar, t;
 
 	result_starstar = rotl(seed[0] * 5, 7) * 9;
@@ -69,8 +70,8 @@ next(void) {
 	return (result_starstar);
 }
 
-uint32_t
-random_uniform(uint32_t limit) {
+uint32_t random_uniform(uint32_t limit)
+{
 	/*
 	 * Daniel Lemire's nearly-divisionless unbiased bounded random numbers.
 	 *
